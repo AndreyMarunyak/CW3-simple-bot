@@ -84,6 +84,7 @@ def log(text):
     log_list.append(message)
 
 
+
 @coroutine
 def work_with_message(receiver):
     global bot_user_id
@@ -143,6 +144,9 @@ def parse_text(text, username, message_id):
         elif 'Приключения зовут. Но ты отправился в болото.' in text:
             log('Бродишь по болоту')
 
+        elif '/pledge' in text:
+            send_msg('@', bot_username, '/pledge')
+
     if username == order_username:
         if text.find(orders['Рассвет']) != -1:
             update_order(orders['Рассвет'])
@@ -175,6 +179,8 @@ def update_order(order):
 def send_msg(pref, to, message):
     sender.send_msg(pref + to, message)
 
+def send_msg(pref, to, message):
+        sender.send_msg(pref + to, message)
 
 def fwd(pref, to, message_id):
     sender.fwd(pref + to, message_id)
