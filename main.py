@@ -25,13 +25,13 @@ fullpath = os.path.abspath(pathname)
 bot_username = 'ChatWarsBot'
 
 # ваш username или username человека, который может отправлять запросы этому скрипту
-admin_username = ''
+admin_username = 'zebra1mrn'
 
 # username бота и/или человека, которые будут отправлять приказы
-order_usernames = ''
+order_usernames = 'cwDawnBot'
 
 # имя замка
-castle_name = None
+castle_name = 'Рассвет'
 
 captcha_bot = 'ChatWarsCaptchaBot'
 
@@ -43,7 +43,7 @@ trade_bot = 'ChatWarsTradeBot'
 redstat_bot = 'RedStatBot'
 redstat2_bot = 'CWRedCastleBot'
 
-blueoysterbot = 'BlueOysterBot'
+blueoysterbot = 'CWCastleBot'
 
 # путь к сокет файлу
 socket_path = ''
@@ -52,7 +52,7 @@ socket_path = ''
 host = 'localhost'
 
 # порт по которому слушать
-port = 1338
+port = 4458
 
 # скидывание денег покупкой/продажей шлемов
 donate_buying = False
@@ -61,7 +61,7 @@ donate_buying = False
 lvl_up = 'lvl_off'
 
 # имя группы
-group_name = ''
+group_name = 'Drakkar «Aurora» [AURA]'
 
 build_target = '/build_hq'
 
@@ -79,7 +79,7 @@ gold_to_left = 0
 fight_path = ''
 
 # apikey для IFTTT
-apikey = None
+apikey = 'bHtl8uE0zoxVvjAZc9zhvo'
 
 opts, args = getopt(sys.argv[1:], 'a:o:s:h:p:g:b:l:n:k:f:', ['admin=', 'order=', 'socket=', 'host=', 'port=',
                                                           'gold=', 'buy=', 'lvlup=', 'group_name=', 'apikey=', 'fpath='])
@@ -112,20 +112,20 @@ if apikey is not None:
     import requests
         
 orders = {
-    'red': '🇮🇲',
-    'black': '🇬🇵',
-    'white': '🇨🇾',
-    'yellow': '🇻🇦',
-    'blue': '🇪🇺',
-    'mint': '🇲🇴',
-    'twilight': '🇰🇮',
+    'Рассвет': '🌹',
+    'Ночь': '🦇',
+    'Скала': '🖤',
+    'Ферма': '🍆',
+    'Оплот': '☘️',
+    'Тортуга': '🐢',
+    'Амбер': '🍁',
     'lesnoi_fort': '🌲Лесной форт',
     'les': '🌲Лес',
     'gorni_fort': '⛰Горный форт',
     'morskoi_fort': '⚓Морской форт',
     'gora': '⛰',
-    'cover': '🛡 Защита',
-    'attack': '⚔ Атака',
+    'cover': '🛡',
+    'attack': '⚔',
     'cover_symbol': '🛡',
     'hero': '🏅Герой',
     'corovan': '/go',
@@ -183,13 +183,13 @@ builds = {
 }
 
 flags = {
-    '🇪🇺': 'blue',
-    '🇮🇲': 'red',
-    '🇬🇵': 'black',
-    '🇻🇦': 'yellow',
-    '🇨🇾': 'white',
-    '🇰🇮': 'twilight',
-    '🇲🇴': 'mint',
+    '🐢': 'Тортуга',
+    '🦇': 'Ночь',
+    '🖤': 'Скала',
+    '🍆': 'Ферма',
+    '☘️': 'Оплот',
+    '🍁': 'Амбер',
+    '🌹': 'Рассвет',
 }
 
 pet_states = {
@@ -209,23 +209,23 @@ pet_char_states = {
 
 # Блядь, ну нахуя так репорты собирать то, а?
 oyster_report_castles = {
-    'red': '🇮🇲Красный замок',
-    'black': '🇬🇵Черный замок',
-    'white': '🇨🇾Белый замок',
-    'yellow': '🇻🇦Желтый замок',
-    'blue': '🇪🇺Синий замок',
-    'mint': '🇲🇴Мятный замок',
-    'twilight': '🇰🇮Сумрачный замок',
+    'Рассвет': '🌹Замок Рассвета',
+    'Cкала': '🖤Скала',
+    'Амбер': '🍁Амбер',
+    'Тортуга': '🐢ортуга',
+    'Ночь': '🦇Ночной Замок',
+    'Ферма': '🍆Ферма',
+    'Оплот': '☘️Оплот',
 }
 
 arena_cover = ['🛡головы', '🛡корпуса', '🛡ног']
 arena_attack = ['🗡в голову', '🗡по корпусу', '🗡по ногам']
 # ничо не менять, все подхватится само
-castle = orders['blue']
+castle = orders['Рассвет']
 # текущий приказ на атаку/защиту, по умолчанию всегда защита, трогать не нужно
 current_order = {'time': 0, 'order': castle}
 # задаем получателя ответов бота: админ или группа
-if group_name =='':
+if group_name =='Drakkar «Aurora» [AURA]':
     pref = '@'
     msg_receiver = admin_username
 else:
@@ -243,7 +243,7 @@ last_captcha_id = 0
 last_pet_play = 0
 
 bot_enabled = True
-arena_enabled = True
+arena_enabled = False
 les_enabled = True
 peshera_enabled = False
 more_enabled = False
@@ -251,7 +251,7 @@ corovan_enabled = True
 order_enabled = True
 auto_def_enabled = True
 donate_enabled = False
-quest_fight_enabled = True
+quest_fight_enabled = False
 build_enabled = False
 firststock_enabled = True
 secondstock_enabled = False
@@ -518,7 +518,7 @@ def parse_text(text, username, message_id):
             arena_running = False
 
         elif 'Ты вернулся со стройки:' in text:
-            if castle_name == 'red':
+            if castle_name == 'Рассвет':
                 log("Построили, сообщаем легату")
                 fwd('@', redstat_bot, message_id)
                 fwd('@', redstat2_bot, message_id)
@@ -527,7 +527,7 @@ def parse_text(text, username, message_id):
                 fwd('@', 'BlueOysterBot', message_id)
 
         elif 'Здание отремонтировано:' in text:
-            if castle_name == 'red':
+            if castle_name == 'Рассвет':
                 log("Отремонтировали, сообщаем легату")
                 fwd('@', redstat_bot, message_id)
                 fwd('@', redstat2_bot, message_id)
@@ -536,23 +536,20 @@ def parse_text(text, username, message_id):
                 fwd('@', 'BlueOysterBot', message_id)
 
         elif 'Твои результаты в бою:' in text:
-            if castle_name == 'red':
-                log("Повоевали, сообщаем легату")
-                fwd('@', redstat_bot, message_id)
-                fwd('@', redstat2_bot, message_id)
 
-            if castle_name == 'blue':
+
+            if castle_name == 'Рассвет':
                 log("Повоевали, сообщаем ойстеру")
-                fwd('@', 'BlueOysterBot', message_id)
+                fwd('@', 'CWCastleBot', message_id)
 
                 def send_order_type():
                     if current_order['order'] == castle:
-                        send_msg('@', 'BlueOysterBot', orders['cover'])
+                        send_msg('@', 'CWCastleBot', orders['cover'])
                     else:
-                        send_msg('@', 'BlueOysterBot', orders['attack'])
+                        send_msg('@', 'CWCastleBot', orders['attack'])
 
                 def send_order():
-                    send_msg('@', 'BlueOysterBot', oyster_report_castles[flags[current_order['order']]])
+                    send_msg('@', 'CWCastleBot', oyster_report_castles[flags[current_order['order']]])
 
                 t = Timer(4, send_order_type())
                 t2 = Timer(8, send_order())
@@ -649,15 +646,15 @@ def parse_text(text, username, message_id):
             if re.search('Помощник:', text) is not None:
                 # жевотне обнаружено
                 pet_state = pet_states[re.search('Помощник:\n.+\(.+\) (.+) /pet', text).group(1)]
-            m = re.search('Битва семи замков через (?:(?:(\d+)ч)? ?(?:(\d+) минут)?|несколько секунд)', text)
+            m = re.search('Битва семи замков через (?:(?:(\d+)ч.)? ?(?:(\d+) минут)?|несколько секунд)', text)
             if not m and re.search('Межсезонье', text):
-                m = re.search('Битва семи замков через (?:(?:(\d+)ч)? ?(?:(\d+) минут)?|несколько секунд)', 'Битва семи замков через 10000ч 100 минут')
+                m = re.search('Битва семи замков через (?:(?:(\d+)ч.)? ?(?:(\d+) минут)?|несколько секунд)', 'Битва семи замков через 10000ч 100 минут')
             if not m.group(1):
                 if m.group(2) and int(m.group(2)) <= 29:
                     report = True
                     state = re.search('Состояние:\n(.*)', text).group(1)
                     if auto_def_enabled and time() - current_order['time'] > 1800 and 'Отдых' in state:
-                        if castle_name == 'red':
+                        if castle_name == 'Замок рассвета':
                             fwd('@', redstat_bot, hero_message_id)
                             log("отправляем профиль легату")
                         elif castle_name == 'blue':
@@ -848,26 +845,21 @@ def parse_text(text, username, message_id):
             action_list.append(c)
     
         if bot_enabled and order_enabled and (username in order_usernames or username == admin_username):
-            if text.find(orders['red']) != -1:
-                update_order(orders['red'])
-            elif text.find(orders['black']) != -1:
-                update_order(orders['black'])
-            elif text.find(orders['white']) != -1:
-                update_order(orders['white'])
-            elif text.find(orders['yellow']) != -1:
-                update_order(orders['yellow'])
-            elif text.find(orders['blue']) != -1:
-                update_order(orders['blue'])
-            elif text.find(orders['mint']) != -1:
-                update_order(orders['mint'])
-            elif text.find(orders['twilight']) != -1:
-                update_order(orders['twilight'])
-            elif text.find('🌲') != -1:
-                update_order(orders['lesnoi_fort'])
-            elif text.find('⛰') != -1:
-                update_order(orders['gorni_fort'])
-            elif text.find('⚓️') != -1:
-                update_order(orders['morskoi_fort'])
+            if text.find(orders['Рассвет']) != -1:
+                update_order(orders['Рассвет'])
+            elif text.find(orders['Скала']) != -1:
+                update_order(orders['Скала'])
+            elif text.find(orders['Оплот']) != -1:
+                update_order(orders['Оплот'])
+            elif text.find(orders['Амбер']) != -1:
+                update_order(orders['Амбер'])
+            elif text.find(orders['Ферма']) != -1:
+                update_order(orders['Ферма'])
+            elif text.find(orders['Ночь']) != -1:
+                update_order(orders['Ночь'])
+            elif text.find(orders['Тортуга']) != -1:
+                update_order(orders['Тортуга'])
+
             elif text.find('🛡') != -1:
                 update_order(castle)
 
