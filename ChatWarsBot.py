@@ -13,6 +13,9 @@ from pytg.receiver import Receiver
 from pytg.utils import coroutine
 from time import sleep, time
 
+
+
+
 # telegram-cli host and port
 # run "telegram-cli --json -P 4458"
 host = 'localhost'
@@ -26,6 +29,9 @@ bot_username = 'ChatWarsBot'
 
 # username for orders
 order_username = 'cwDawnBot'
+
+# user_id of bot, needed for configuration
+bot_user_id = 'zebra1mrn'
 
 # main pytg Sender
 sender = Sender(host=host, port=port)
@@ -51,20 +57,15 @@ orders = {
     'quests': '🗺Квесты',
     'castle_menu': '🏰Замок',
     'cover': '🛡',
-    'attack': '⚔',
-    'les': '🌲Лес',
-    'valey':'⛰️Долина',
-    'swamp':'🍄Болото'
+    'attack': '⚔'
 }
 
 quests_id = {
      0 : '🌲Лес',
      1 : '⛰️Долина',
-     2 : '🍄Болото'
+     2 : '🍄Болото',
+     3 : '🗡ГРАБИТЬ КОРОВАНЫ'
 }
-
-# user_id of bot, needed for configuration
-bot_user_id = ''
 
 # delay for getting info will be random in future
 get_info_diff = 360
@@ -72,10 +73,10 @@ get_info_diff = 360
 # todo add description
 lt_info = 0
 
-# todo add description
+# switches
 bot_enabled = True
-
 quests_enabled = True
+corovan_enabled = True
 
 
 def log(text):
@@ -127,8 +128,12 @@ def parse_text(text, username, message_id):
                 if level < 20:
                     action_list.append(quests_id[0])
                 else:
-                    action_list.append(quests_id[random.randint(0,2)])
-
+                    action_list.append(quests_id[random.randint(0,2)]) # random choose: 0 -  forest, 1 - valley, 2 - swamp
+            current_hour = datetime.now(tz).hour
+            # attack corovans beetwen 3 and 7 AM
+            if endurance >= 2 and 3 <= current_hour <= 7:
+                action_list.append(orders['quests'])
+                action_list.append(orders[3]) # 3 - corovans
 
             elif state != '🛌Отдых':
                 log('Чем-то занят')
@@ -165,6 +170,11 @@ def parse_text(text, username, message_id):
         elif text.find('🛡') != -1:
             update_order(castle)
 
+    if username == bot_user_id:
+        if text.find('help'):
+            send_msg('@', bot_user_id, '\n'.join([
+                ''
+            ]))
 
 def update_order(order):
     current_order['order'] = order
