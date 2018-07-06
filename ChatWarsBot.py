@@ -48,13 +48,19 @@ orders = {
     ######################
     'corovan': '/go',
     'hero': '🏅Герой',
-    'quests': '🗺 Квесты',
+    'quests': '🗺Квесты',
     'castle_menu': '🏰Замок',
     'cover': '🛡',
     'attack': '⚔',
     'les': '🌲Лес',
     'valey':'⛰️Долина',
     'swamp':'🍄Болото'
+}
+
+quests_id = {
+     0 : '🌲Лес',
+     1 : '⛰️Долина',
+     2 : '🍄Болото'
 }
 
 # user_id of bot, needed for configuration
@@ -68,6 +74,8 @@ lt_info = 0
 
 # todo add description
 bot_enabled = True
+
+quests_enabled = True
 
 
 def log(text):
@@ -111,6 +119,29 @@ def parse_text(text, username, message_id):
             state = re.search('Состояние:\n(.*)', text).group(1)
             log('Уровень: {0}, золото: {1}, выносливость: {2} / {3}, Рюкзак: {4} / {5}, Состояние: {6}'
                 .format(level, gold, endurance, endurance_max, inv.group(1), inv.group(2), state))
+            if endurance > 0 and state == '🛌Отдых' and quests_enabled:
+                sleep(random.randint(1,4))
+                action_list.append(orders['quests'])
+                sleep(2)
+                if level < 20:
+                    action_list.append(quests_id[0])
+                else:
+                    action_list.append(quests_id[random.randint(0,2)])
+
+
+            elif state != '🛌Отдых':
+                log('Чем-то занят')
+            elif endurance == 0:
+                log('Выносливость на нуле. Ждём')
+
+        elif 'Горы полны опасностей. Ты решил исследовать, что там происходит.' in text:
+            log('Ушёл гулять в долину')
+
+        elif 'Ты отправился искать приключения в лес.' in text:
+            log('Ушёл в лес')
+
+        elif 'Приключения зовут. Но ты отправился в болото.' in text:
+            log('Бродишь по болоту')
 
     if username == order_username:
         if text.find(orders['Рассвет']) != -1:
