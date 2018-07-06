@@ -74,10 +74,10 @@ get_info_diff = 360
 lt_info = 0
 
 # switches
-bot_enabled = True
-quests_enabled = True
-corovan_enabled = True
 
+bot_enabled = True
+quests_enabled = False
+corovan_enabled = True
 
 def log(text):
     message = '{0:%Y-%m-%d+ %H:%M:%S}'.format(datetime.now()) + ' ' + text
@@ -104,6 +104,9 @@ def work_with_message(receiver):
 
 
 def parse_text(text, username, message_id):
+
+
+
     if username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
 
@@ -152,29 +155,51 @@ def parse_text(text, username, message_id):
         elif '/pledge' in text:
             send_msg('@', bot_username, '/pledge')
 
-    if username == order_username:
-        if text.find(orders['Рассвет']) != -1:
-            update_order(orders['Рассвет'])
-        elif text.find(orders['Скала']) != -1:
-            update_order(orders['Скала'])
-        elif text.find(orders['Оплот']) != -1:
-            update_order(orders['Оплот'])
-        elif text.find(orders['Амбер']) != -1:
-            update_order(orders['Амбер'])
-        elif text.find(orders['Ферма']) != -1:
-            update_order(orders['Ферма'])
-        elif text.find(orders['Ночь']) != -1:
-            update_order(orders['Ночь'])
-        elif text.find(orders['Тортуга']) != -1:
-            update_order(orders['Тортуга'])
-        elif text.find('🛡') != -1:
-            update_order(castle)
+    if username == order_username: # todo figure out how to send emoji
+        if text.find('⚔🌹') != -1:
+            action_list.append(orders['Рассвет'])
+        elif text.find('⚔️🖤') != -1:
+            action_list.append(orders['Скала'])
+        elif text.find('⚔☘️') != -1:
+            action_list.append(orders['Оплот'])
+        elif text.find('⚔🍁') != -1:
+            action_list.append(orders['Амбер'])
+        elif text.find('⚔🍆') != -1:
+            action_list.append(orders['Ферма'])
+        elif text.find('⚔🦇') != -1:
+            action_list.append(orders['Ночь'])
+        elif text.find('⚔️🖤') != -1:
+            action_list.append(orders['Тортуга'])
+
 
     if username == bot_user_id:
-        if text.find('help'):
+        if text == 'help':
             send_msg('@', bot_user_id, '\n'.join([
-                ''
+                'quest_off',
+                'corovan_off',
+                'bot_off',
+                'bot_on',
+                'quest_on',
+                'corovan_on'
             ]))
+        elif text == 'quest_off':
+            quests_enabled = False
+            send_msg('@', bot_user_id, 'Походы по квестам выключены')
+        elif text == 'corovan_off':
+            corovan_enabled = False
+            send_msg('@', bot_user_id, 'Ты оставил корованы в покое')
+        elif text == 'bot_off':
+            bot_enabled = False
+            send_msg('@', bot_user_id,'Бот выключен')
+        elif text == 'quest_on':
+            quests_enabled = True
+            send_msg('@', bot_user_id,'Походы по квестам выключены')
+        elif text == 'corovan_on':
+            corovan_enabled = True
+            send_msg('@', bot_user_id,'Ты оставил корованы в покое')
+        elif text == 'bot_on':
+            bot_enabled = True
+            send_msg('@', bot_user_id,'Бот выключен')
 
 def update_order(order):
     current_order['order'] = order
@@ -200,6 +225,7 @@ def queue_worker():
     global get_info_diff
     global lt_info
     global tz
+
     sleep(3)
     while True:
         try:
