@@ -44,13 +44,13 @@ action_list = deque([])
 
 # list of all possible actions
 orders = {
-    'Рассвет': 'text',
-    'Ночь': '🦇',
-    'Скала': '🖤',
-    'Ферма': '🍆',
-    'Оплот': '☘️',
-    'Тортуга': '🐢',
-    'Амбер': '🍁',
+    'rassvet': '🌹',
+    'mish_ebat': '🦇',
+    'skala': '🖤',
+    'ferma': '🍆',
+    'oplot': '☘️',
+    'tortuga': '🐢',
+    'amber': '🍁',
     ######################
     'corovan': '/go',
     'hero': '🏅Герой',
@@ -162,22 +162,22 @@ def parse_text(text, username, message_id):
             action_list.append(orders['cover'])
         elif text.find('⚔️🖤') != -1:
             action_list.append(orders['attack'])
-            action_list.append(orders['Скала'])
+            action_list.append(orders['skala'])
         elif text.find('⚔️☘️') != -1:
             action_list.append(orders['attack'])
-            action_list.append(orders['Оплот'])
+            action_list.append(orders['oplot'])
         elif text.find('⚔️🍁') != -1:
             action_list.append(orders['attack'])
-            action_list.append(orders['Амбер'])
+            action_list.append(orders['amber'])
         elif text.find('⚔️🍆') != -1:
             action_list.append(orders['attack'])
-            action_list.append(orders['Ферма'])
+            action_list.append(orders['ferma'])
         elif text.find('⚔️🦇') != -1:
             action_list.append(orders['attack'])
-            action_list.append(orders['Ночь'])
+            action_list.append(orders['mish_ebat'])
         elif text.find('⚔️🐢') != -1:
             action_list.append(orders['attack'])
-            action_list.append(orders['Тортуга'])
+            action_list.append(orders['tortuga'])
 
 
     if username == bot_user_id:
