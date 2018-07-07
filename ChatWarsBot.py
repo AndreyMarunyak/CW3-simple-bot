@@ -44,7 +44,7 @@ action_list = deque([])
 
 # list of all possible actions
 orders = {
-    'Рассвет': '🌹',
+    'Рассвет': 'text',
     'Ночь': '🦇',
     'Скала': '🖤',
     'Ферма': '🍆',
@@ -56,8 +56,8 @@ orders = {
     'hero': '🏅Герой',
     'quests': '🗺Квесты',
     'castle_menu': '🏰Замок',
-    'cover': '🛡',
-    'attack': '⚔'
+    'cover': '🛡Защита',
+    'attack': '⚔️Атака'
 }
 
 quests_id = {
@@ -76,7 +76,7 @@ lt_info = 0
 # switches
 
 bot_enabled = True
-quests_enabled = False
+global quests_enabled
 corovan_enabled = True
 
 def log(text):
@@ -89,6 +89,8 @@ def log(text):
 @coroutine
 def work_with_message(receiver):
     global bot_user_id
+
+    quests_enabled = False
     while True:
         msg = (yield)
         try:
@@ -124,7 +126,7 @@ def parse_text(text, username, message_id):
             state = re.search('Состояние:\n(.*)', text).group(1)
             log('Уровень: {0}, золото: {1}, выносливость: {2} / {3}, Рюкзак: {4} / {5}, Состояние: {6}'
                 .format(level, gold, endurance, endurance_max, inv.group(1), inv.group(2), state))
-            if endurance > 0 and state == '🛌Отдых' and quests_enabled:
+            if endurance > 0 and state == '🛌Отдых':
                 sleep(random.randint(1,4))
                 action_list.append(orders['quests'])
                 sleep(2)
@@ -133,10 +135,10 @@ def parse_text(text, username, message_id):
                 else:
                     action_list.append(quests_id[random.randint(0,2)]) # random choose: 0 -  forest, 1 - valley, 2 - swamp
             current_hour = datetime.now(tz).hour
-            # attack corovans beetwen 3 and 7 AM
-            if endurance >= 2 and 3 <= current_hour <= 7:
+            # attack corovans beetwen 3 and 6:59 AM
+            if endurance >= 2 and 3 <= current_hour <= 6:
                 action_list.append(orders['quests'])
-                action_list.append(orders[3]) # 3 - corovans
+                action_list.append(quests_id[3]) # 3 - corovans
 
             elif state != '🛌Отдых':
                 log('Чем-то занят')
@@ -155,20 +157,26 @@ def parse_text(text, username, message_id):
         elif '/pledge' in text:
             send_msg('@', bot_username, '/pledge')
 
-    if username == order_username: # todo figure out how to send emoji
-        if text.find('⚔🌹') != -1:
-            action_list.append(orders['Рассвет'])
+    if username == order_username:
+        if text.find('⚔️🌹') != -1:
+            action_list.append(orders['cover'])
         elif text.find('⚔️🖤') != -1:
+            action_list.append(orders['attack'])
             action_list.append(orders['Скала'])
-        elif text.find('⚔☘️') != -1:
+        elif text.find('⚔️☘️') != -1:
+            action_list.append(orders['attack'])
             action_list.append(orders['Оплот'])
-        elif text.find('⚔🍁') != -1:
+        elif text.find('⚔️🍁') != -1:
+            action_list.append(orders['attack'])
             action_list.append(orders['Амбер'])
-        elif text.find('⚔🍆') != -1:
+        elif text.find('⚔️🍆') != -1:
+            action_list.append(orders['attack'])
             action_list.append(orders['Ферма'])
-        elif text.find('⚔🦇') != -1:
+        elif text.find('⚔️🦇') != -1:
+            action_list.append(orders['attack'])
             action_list.append(orders['Ночь'])
-        elif text.find('⚔️🖤') != -1:
+        elif text.find('⚔️🐢') != -1:
+            action_list.append(orders['attack'])
             action_list.append(orders['Тортуга'])
 
 
