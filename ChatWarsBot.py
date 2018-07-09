@@ -169,30 +169,27 @@ def parse_text(text, username, message_id):
     if username == order_username:
         msg = sender.message_get(message_id)
         if 'reply_id' in msg: # check if we have pin from order bot
-            fwd('@', bot_user_id, msg.reply_id) # forward this shit to us
+            msg = sender.message_get(msg.reply_id) # go to the top message
+            if msg.text.find('⚔️🌹') != -1:
+                action_list.append(orders['cover'])
+            elif msg.text.find('⚔️🖤') != -1:
+                action_list.append(orders['skala'])
+            elif msg.text.find('⚔️☘️') != -1:
+                action_list.append(orders['oplot'])
+            elif msg.text.find('⚔️🍁') != -1:
+                action_list.append(orders['amber'])
+            elif msg.text.find('⚔️🍆') != -1:
+                action_list.append(orders['ferma'])
+            elif msg.text.find('⚔️🦇') != -1:
+                action_list.append(orders['mish_ebat'])
+            elif msg.text.find('⚔️🐢') != -1:
+                action_list.append(orders['tortuga'])
 
 
 
 
-    if username == bot_user_id or order_username:
 
-        if text.find('⚔️🌹') != -1:
-            action_list.append(orders['cover'])
-        elif text.find('⚔️🖤') != -1:
-            action_list.append(orders['skala'])
-        elif text.find('⚔️☘️') != -1:
-            action_list.append(orders['oplot'])
-        elif text.find('⚔️🍁') != -1:
-            action_list.append(orders['amber'])
-        elif text.find('⚔️🍆') != -1:
-            action_list.append(orders['ferma'])
-        elif text.find('⚔️🦇') != -1:
-            action_list.append(orders['mish_ebat'])
-        elif text.find('⚔️🐢') != -1:
-            action_list.append(orders['tortuga'])
-
-
-
+    if username == bot_user_id:
 
         if text == 'help':
             send_msg('@', bot_user_id, '\n'.join([
