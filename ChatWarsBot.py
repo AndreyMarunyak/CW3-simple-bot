@@ -57,7 +57,7 @@ orders = {
     'quests': '🗺Квесты',
     'castle_menu': '🏰Замок',
     'cover': '🛡Защита',
-    'attack': '⚔️Атака'
+    'attack': '⚔️️Атака'
 }
 
 quests_id = {
@@ -90,7 +90,6 @@ def log(text):
 def work_with_message(receiver):
     global bot_user_id
 
-    quests_enabled = False
     while True:
         msg = (yield)
         try:
@@ -126,7 +125,7 @@ def parse_text(text, username, message_id):
             state = re.search('Состояние:\n(.*)', text).group(1)
             log('Уровень: {0}, золото: {1}, выносливость: {2} / {3}, Рюкзак: {4} / {5}, Состояние: {6}'
                 .format(level, gold, endurance, endurance_max, inv.group(1), inv.group(2), state))
-            if endurance > 0 and state == '🛌Отдых':
+            if endurance > 0 and state == '🛌Отдых' and False:
                 sleep(random.randint(1,4))
                 action_list.append(orders['quests'])
                 sleep(2)
@@ -139,6 +138,12 @@ def parse_text(text, username, message_id):
             if endurance >= 2 and 3 <= current_hour <= 6:
                 action_list.append(orders['quests'])
                 action_list.append(quests_id[3]) # 3 - corovans
+
+            if gold >=4 and current_hour == 7:
+                sticks_to_buy = gold // 4
+                send_msg('@', bot_username, '/t stick')
+                sleep(6)
+                send_msg('@', bot_username, '/wtb_02_' + str(sticks_to_buy))
 
             elif state != '🛌Отдых':
                 log('Чем-то занят')
@@ -157,30 +162,38 @@ def parse_text(text, username, message_id):
         elif '/pledge' in text:
             send_msg('@', bot_username, '/pledge')
 
+
+
+
+
     if username == order_username:
+        msg = sender.message_get(message_id)
+        if 'reply_id' in msg: # check if we have pin from order bot
+            fwd('@', bot_user_id, msg.reply_id) # forward this shit to us
+
+
+
+
+    if username == bot_user_id or order_username:
+
         if text.find('⚔️🌹') != -1:
             action_list.append(orders['cover'])
         elif text.find('⚔️🖤') != -1:
-            action_list.append(orders['attack'])
             action_list.append(orders['skala'])
         elif text.find('⚔️☘️') != -1:
-            action_list.append(orders['attack'])
             action_list.append(orders['oplot'])
         elif text.find('⚔️🍁') != -1:
-            action_list.append(orders['attack'])
             action_list.append(orders['amber'])
         elif text.find('⚔️🍆') != -1:
-            action_list.append(orders['attack'])
             action_list.append(orders['ferma'])
         elif text.find('⚔️🦇') != -1:
-            action_list.append(orders['attack'])
             action_list.append(orders['mish_ebat'])
         elif text.find('⚔️🐢') != -1:
-            action_list.append(orders['attack'])
             action_list.append(orders['tortuga'])
 
 
-    if username == bot_user_id:
+
+
         if text == 'help':
             send_msg('@', bot_user_id, '\n'.join([
                 'quest_off',
@@ -209,21 +222,20 @@ def parse_text(text, username, message_id):
             bot_enabled = True
             send_msg('@', bot_user_id,'Бот выключен')
 
-def update_order(order):
-    current_order['order'] = order
-    current_order['time'] = time()
-    if order == castle:
-        action_list.append(orders['cover'])
-    else:
-        action_list.append(orders['attack'])
-    action_list.append(order)
+def get_message_replied_to(msg, sender):
+    if 'reply_id' in msg:
+        next_msg = sender.message_get(msg.reply_id)
+        return get_message_replied_to(next_msg, sender)
+    return msg
+
+
 
 
 def send_msg(pref, to, message):
     sender.send_msg(pref + to, message)
 
 def send_msg(pref, to, message):
-        sender.send_msg(pref + to, message)
+    sender.send_msg(pref + to, message)
 
 def fwd(pref, to, message_id):
     sender.fwd(pref + to, message_id)
@@ -245,7 +257,7 @@ def queue_worker():
                     get_info_diff = random.randint(420, 900)
                 else:
                     get_info_diff = random.randint(600, 900)
-                if bot_enabled:
+                if bot_enabled and 3 <= current_hour <= 7:
                     send_msg('@', bot_username, orders['hero'])
                 continue
             # if fight_path != '' and castle_name is not None:
