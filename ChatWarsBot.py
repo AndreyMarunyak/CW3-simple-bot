@@ -13,9 +13,6 @@ from pytg.receiver import Receiver
 from pytg.utils import coroutine
 from time import sleep, time
 
-
-
-
 # telegram-cli host and port
 # run "telegram-cli --json -P 4458"
 host = 'localhost'
@@ -42,6 +39,11 @@ log_list = deque([], maxlen=30)
 # list for future actions
 action_list = deque([])
 
+# switches
+bot_enabled = True
+corovan_enabled = True
+quests_enabled = True
+
 # list of all possible actions
 orders = {
     'rassvet': '🌹',
@@ -61,10 +63,10 @@ orders = {
 }
 
 quests_id = {
-     0 : '🌲Лес',
-     1 : '⛰️Долина',
-     2 : '🍄Болото',
-     3 : '🗡ГРАБИТЬ КОРОВАНЫ'
+    0: '🌲Лес',
+    1: '⛰️Долина',
+    2: '🍄Болото',
+    3: '🗡ГРАБИТЬ КОРОВАНЫ'
 }
 
 # delay for getting info will be random in future
@@ -73,17 +75,10 @@ get_info_diff = 360
 # todo add description
 lt_info = 0
 
-# switches
-
-bot_enabled = True
-global quests_enabled
-corovan_enabled = True
-
 def log(text):
     message = '{0:%Y-%m-%d+ %H:%M:%S}'.format(datetime.now()) + ' ' + text
     print(message)
     log_list.append(message)
-
 
 
 @coroutine
@@ -106,7 +101,9 @@ def work_with_message(receiver):
 
 def parse_text(text, username, message_id):
 
-
+    global quests_enabled
+    global corovan_enabled
+    global bot_enabled
 
     if username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
@@ -125,21 +122,22 @@ def parse_text(text, username, message_id):
             state = re.search('Состояние:\n(.*)', text).group(1)
             log('Уровень: {0}, золото: {1}, выносливость: {2} / {3}, Рюкзак: {4} / {5}, Состояние: {6}'
                 .format(level, gold, endurance, endurance_max, inv.group(1), inv.group(2), state))
-            if endurance > 0 and state == '🛌Отдых' and False:
-                sleep(random.randint(1,4))
+            if endurance > 0 and state == '🛌Отдых' and quests_enabled:
+                sleep(random.randint(1, 4))
                 action_list.append(orders['quests'])
                 sleep(2)
                 if level < 20:
                     action_list.append(quests_id[0])
                 else:
-                    action_list.append(quests_id[random.randint(0,2)]) # random choose: 0 -  forest, 1 - valley, 2 - swamp
+                    action_list.append(
+                        quests_id[random.randint(0, 2)])  # random choose: 0 -  forest, 1 - valley, 2 - swamp
             current_hour = datetime.now(tz).hour
             # attack corovans beetwen 3 and 6:59 AM
-            if endurance >= 2 and 3 <= current_hour <= 6:
+            if endurance >= 2 and 3 <= current_hour <= 6 and corovan_enabled:
                 action_list.append(orders['quests'])
-                action_list.append(quests_id[3]) # 3 - corovans
+                action_list.append(quests_id[3])  # 3 - corovans
 
-            if gold >=4 and current_hour == 7:
+            if gold >= 4 and current_hour == 7:
                 sticks_to_buy = gold // 4
                 send_msg('@', bot_username, '/t stick')
                 sleep(6)
@@ -162,34 +160,27 @@ def parse_text(text, username, message_id):
         elif '/pledge' in text:
             send_msg('@', bot_username, '/pledge')
 
-
-
-
-
     if username == order_username:
         msg = sender.message_get(message_id)
-        if 'reply_id' in msg: # check if we have pin from order bot
-            msg = sender.message_get(msg.reply_id) # go to the top message
-            if msg.text.find('⚔️🌹') != -1:
-                action_list.append(orders['cover'])
-            elif msg.text.find('⚔️🖤') != -1:
-                action_list.append(orders['skala'])
-            elif msg.text.find('⚔️☘️') != -1:
-                action_list.append(orders['oplot'])
-            elif msg.text.find('⚔️🍁') != -1:
-                action_list.append(orders['amber'])
-            elif msg.text.find('⚔️🍆') != -1:
-                action_list.append(orders['ferma'])
-            elif msg.text.find('⚔️🦇') != -1:
-                action_list.append(orders['mish_ebat'])
-            elif msg.text.find('⚔️🐢') != -1:
-                action_list.append(orders['tortuga'])
+        if 'reply_id' in msg:  # check if we have pin from order bot
+            fwd('@', bot_user_id, msg.reply_id)  # forward this shit to us
 
+    if username == bot_user_id or username == order_username:
 
-
-
-
-    if username == bot_user_id:
+        if text.find('⚔️🌹') != -1:
+            action_list.append(orders['cover'])
+        elif text.find('⚔️🖤') != -1:
+            action_list.append(orders['skala'])
+        elif text.find('⚔️☘️') != -1:
+            action_list.append(orders['oplot'])
+        elif text.find('⚔️🍁') != -1:
+            action_list.append(orders['amber'])
+        elif text.find('⚔️🍆') != -1:
+            action_list.append(orders['ferma'])
+        elif text.find('⚔️🦇') != -1:
+            action_list.append(orders['mish_ebat'])
+        elif text.find('⚔️🐢') != -1:
+            action_list.append(orders['tortuga'])
 
         if text == 'help':
             send_msg('@', bot_user_id, '\n'.join([
@@ -208,16 +199,17 @@ def parse_text(text, username, message_id):
             send_msg('@', bot_user_id, 'Ты оставил корованы в покое')
         elif text == 'bot_off':
             bot_enabled = False
-            send_msg('@', bot_user_id,'Бот выключен')
+            send_msg('@', bot_user_id, 'Бот выключен')
         elif text == 'quest_on':
             quests_enabled = True
-            send_msg('@', bot_user_id,'Походы по квестам выключены')
+            send_msg('@', bot_user_id, 'Походы по квестам включены')
         elif text == 'corovan_on':
             corovan_enabled = True
-            send_msg('@', bot_user_id,'Ты оставил корованы в покое')
+            send_msg('@', bot_user_id, 'Корованы в беде. Ты отправишься за ними с 3 до 7 утра')
         elif text == 'bot_on':
             bot_enabled = True
-            send_msg('@', bot_user_id,'Бот выключен')
+            send_msg('@', bot_user_id, 'Бот включен')
+
 
 def get_message_replied_to(msg, sender):
     if 'reply_id' in msg:
@@ -226,13 +218,13 @@ def get_message_replied_to(msg, sender):
     return msg
 
 
+def send_msg(pref, to, message):
+    sender.send_msg(pref + to, message)
 
 
 def send_msg(pref, to, message):
     sender.send_msg(pref + to, message)
 
-def send_msg(pref, to, message):
-    sender.send_msg(pref + to, message)
 
 def fwd(pref, to, message_id):
     sender.fwd(pref + to, message_id)
@@ -242,6 +234,7 @@ def queue_worker():
     global get_info_diff
     global lt_info
     global tz
+    global bot_enabled
 
     sleep(3)
     while True:
@@ -254,7 +247,7 @@ def queue_worker():
                     get_info_diff = random.randint(420, 900)
                 else:
                     get_info_diff = random.randint(600, 900)
-                if bot_enabled and 3 <= current_hour <= 7:
+                if bot_enabled:
                     send_msg('@', bot_username, orders['hero'])
                 continue
             # if fight_path != '' and castle_name is not None:
