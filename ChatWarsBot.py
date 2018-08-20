@@ -11,6 +11,7 @@ import pytz
 from pytg.sender import Sender
 from pytg.receiver import Receiver
 from pytg.utils import coroutine
+
 from time import sleep, time
 
 # telegram-cli host and port
@@ -30,6 +31,9 @@ order_username = 'cwDawnBot'
 # user_id of bot, needed for configuration
 bot_user_id = 'zebra1mrn'
 
+# username for reports
+report_user = 'CWCastleBot'
+
 # main pytg Sender
 sender = Sender(host=host, port=port)
 
@@ -42,7 +46,12 @@ action_list = deque([])
 # switches
 bot_enabled = True
 corovan_enabled = True
-quests_enabled = True
+quests_enabled = False
+stock = False
+
+forest_enabled = False
+swamp_enabled = False
+valley_enabled = True
 
 # list of all possible actions
 orders = {
@@ -59,15 +68,38 @@ orders = {
     'quests': '🗺Квесты',
     'castle_menu': '🏰Замок',
     'cover': '🛡Защита',
-    'attack': '⚔️️Атака'
+    'attack': '⚔️️Атака',
+    'craft': '⚒Мастерская',
+    'report': '/report',
+    'attack_corovan': '🗡ГРАБИТЬ КОРОВАНЫ'
 }
 
 quests_id = {
-    0: '🌲Лес',
-    1: '⛰️Долина',
-    2: '🍄Болото',
-    3: '🗡ГРАБИТЬ КОРОВАНЫ'
+    'forest': '🌲Лес',
+    'valley': '⛰️Долина',
+    'swamp': '🍄Болото',
 }
+
+
+def quest_declaration():
+    global forest_enabled
+    global swamp_enabled
+    global valley_enabled
+
+    declared_quests = []
+
+    if forest_enabled:
+        declared_quests.append('forest')
+    if swamp_enabled:
+        declared_quests.append('swamp')
+    if valley_enabled:
+        declared_quests.append('valley')
+
+    return declared_quests
+
+
+# list of active quests
+quests = quest_declaration()
 
 # delay for getting info will be random in future
 get_info_diff = 360
@@ -75,8 +107,9 @@ get_info_diff = 360
 # todo add description
 lt_info = 0
 
+
 def log(text):
-    message = '{0:%Y-%m-%d+ %H:%M:%S}'.format(datetime.now()) + ' ' + text
+    message = '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.now()) + ' ' + text
     print(message)
     log_list.append(message)
 
@@ -100,13 +133,18 @@ def work_with_message(receiver):
 
 
 def parse_text(text, username, message_id):
-
     global quests_enabled
     global corovan_enabled
     global bot_enabled
+    global stock
+    global forest_enabled
+    global swamp_enabled
+    global valley_enabled
+    global quests
 
     if username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
+        log(str(quests))
 
         # if someone tries to get "corovan"
         if text.find(' /go') != -1:
@@ -120,28 +158,39 @@ def parse_text(text, username, message_id):
             inv = re.search('🎒Рюкзак: ([0-9]+)/([0-9]+)', text)
             level = int(re.search('🏅Уровень: (\d+)', text).group(1))
             state = re.search('Состояние:\n(.*)', text).group(1)
-            log('Уровень: {0}, золото: {1}, выносливость: {2} / {3}, Рюкзак: {4} / {5}, Состояние: {6}'
-                .format(level, gold, endurance, endurance_max, inv.group(1), inv.group(2), state))
+            if text.find('👝') != -1:
+                pouch = int(re.search('👝(-?[0-9]+)', text).group(1))
+            else:
+                pouch = 0
+            log('Уровень: {0}, золото: {1}, мешки: {2}, выносливость: {3} / {4}, Рюкзак: {5} / {6}, Состояние: {7}'
+                .format(level, gold, pouch, endurance, endurance_max, inv.group(1), inv.group(2), state))
             if endurance > 0 and state == '🛌Отдых' and quests_enabled:
                 sleep(random.randint(1, 4))
                 action_list.append(orders['quests'])
                 sleep(2)
                 if level < 20:
-                    action_list.append(quests_id[0])
+                    action_list.append(quests_id['forest'])
                 else:
-                    action_list.append(
-                        quests_id[random.randint(0, 2)])  # random choose: 0 -  forest, 1 - valley, 2 - swamp
+                    if quests:
+                        action_list.append(quests_id[random.choice(quests)])
             current_hour = datetime.now(tz).hour
             # attack corovans beetwen 3 and 6:59 AM
             if endurance >= 2 and 3 <= current_hour <= 6 and corovan_enabled:
                 action_list.append(orders['quests'])
-                action_list.append(quests_id[3])  # 3 - corovans
+                action_list.append(orders['attack_corovan'])  # 3 - corovans
 
-            if gold >= 4 and current_hour == 7:
-                sticks_to_buy = gold // 4
-                send_msg('@', bot_username, '/t stick')
-                sleep(6)
-                send_msg('@', bot_username, '/wtb_02_' + str(sticks_to_buy))
+            if (current_hour == 7 or current_hour == 15 or current_hour == 23) and stock:
+                if gold >= 120:
+                    action_list.append(orders['castle_menu'])
+                    action_list.append(orders['craft'])
+                    send_msg('@', bot_username, '/craft_100')
+                    log('Крафтим мешочек')
+                elif gold >= 6:
+                    pelt_to_buy = gold // 6
+                    send_msg('@', bot_username, '/t pelt')
+                    sleep(6)
+                    send_msg('@', bot_username, '/wtb_03_' + str(pelt_to_buy))
+                    log('Пытаемся купить {0} пелтов'.format(pelt_to_buy))
 
             elif state != '🛌Отдых':
                 log('Чем-то занят')
@@ -160,12 +209,28 @@ def parse_text(text, username, message_id):
         elif '/pledge' in text:
             send_msg('@', bot_username, '/pledge')
 
+        elif text.find('Твои результаты в бою:') != -1:
+            fwd('@', report_user, message_id)
+
+        elif text.find('Изготовлено: Pouch of gold') != -1:
+            log('Скрафтили мешок')
+
+        sender.mark_read('@' + bot_username)
+
     if username == order_username:
         msg = sender.message_get(message_id)
+
         if 'reply_id' in msg:  # check if we have pin from order bot
+            # reply_msg = sender.message_get(msg.reply_id)
+            # log(str(reply_msg))
+            # log(str(msg))
             fwd('@', bot_user_id, msg.reply_id)  # forward this shit to us
 
-    if username == bot_user_id or username == order_username:
+    if username == report_user:
+        if text.find('Изменения в вашем стоке:') != -1:
+            action_list.append(orders['report'])
+
+    if username == bot_user_id:
 
         if text.find('⚔️🌹') != -1:
             action_list.append(orders['cover'])
@@ -182,14 +247,12 @@ def parse_text(text, username, message_id):
         elif text.find('⚔️🐢') != -1:
             action_list.append(orders['tortuga'])
 
-        if text == 'help':
+        elif text == 'help':
             send_msg('@', bot_user_id, '\n'.join([
-                'quest_off',
-                'corovan_off',
-                'bot_off',
-                'bot_on',
-                'quest_on',
-                'corovan_on'
+                'quest_on/off',
+                'corovan_on/off',
+                'bot_on/off',
+                'stock_on/off'
             ]))
         elif text == 'quest_off':
             quests_enabled = False
@@ -209,17 +272,69 @@ def parse_text(text, username, message_id):
         elif text == 'bot_on':
             bot_enabled = True
             send_msg('@', bot_user_id, 'Бот включен')
+        elif text == 'stock_on':
+            stock = True
+            send_msg('@', bot_user_id, 'Биржа включена')
+        elif text == 'stock_off':
+            stock = False
+            send_msg('@', bot_user_id, 'Биржа выключена')
+        elif text == 'les_on':
+            forest_enabled = True
+            quest_switch_on('forest')
+        elif text == 'swamp_on':
+            swamp_enabled = True
+            quest_switch_on('swamp')
+        elif text == 'valley_on':
+            valley_enabled = True
+            quest_switch_on('valley')
+        elif text == 'valley_off':
+            valley_enabled = False
+            quest_switch_off('valley')
+        elif text == 'forest_off':
+            forest_enabled = False
+            quest_switch_off('forest')
+        elif text == 'swamp_off':
+            swamp_enabled = False
+            quest_switch_off('swamp')
+        else:
+            del_msg(message_id)
 
 
-def get_message_replied_to(msg, sender):
-    if 'reply_id' in msg:
-        next_msg = sender.message_get(msg.reply_id)
-        return get_message_replied_to(next_msg, sender)
-    return msg
+def quest_switch_on(quest_name):
+    global quests
+    global quests_enabled
+
+    if quest_name not in quests:
+        quests.append(quest_name)
+        send_msg('@', bot_user_id, quest_name + ' добавлен в список')
+        if not quests_enabled:
+            send_msg('@', bot_user_id, 'Квесты выключены. Нужно их включить, чтобы бот начал бегать по списку')
+
+    else:
+        send_msg('@', bot_user_id, quest_name + ' уже есть в списке')
+
+    send_msg('@', bot_user_id, 'Состояние списка: ' + str(quests))
 
 
-def send_msg(pref, to, message):
-    sender.send_msg(pref + to, message)
+def quest_switch_off(quest_name):
+    global quests
+    global quests_enabled
+
+    if quest_name in quests:
+        quests.remove(quest_name)
+        send_msg('@', bot_user_id, quest_name + ' удалён из списка')
+        if not quests:
+            send_msg('@', bot_user_id, 'list is empty')
+            quests_enabled = False
+
+    else:
+        send_msg('@', bot_user_id, quest_name + ' уже есть в списке')
+
+    send_msg('@', bot_user_id, 'Состояние списка: ' + str(quests))
+
+
+def del_msg(msg):
+    sender.raw('delete_msg ' + msg)  # raw telegram-cli command
 
 
 def send_msg(pref, to, message):
