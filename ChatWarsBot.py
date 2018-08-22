@@ -81,25 +81,22 @@ quests_id = {
 }
 
 
-def quest_declaration():
-    global forest_enabled
-    global swamp_enabled
-    global valley_enabled
+def quest_declaration(forest, swamp, valley):
 
     declared_quests = []
 
-    if forest_enabled:
+    if forest:
         declared_quests.append('forest')
-    if swamp_enabled:
+    if swamp:
         declared_quests.append('swamp')
-    if valley_enabled:
+    if valley:
         declared_quests.append('valley')
 
     return declared_quests
 
 
 # list of active quests
-quests = quest_declaration()
+quests = quest_declaration(forest_enabled, swamp_enabled, valley_enabled)
 
 # delay for getting info will be random in future
 get_info_diff = 360
@@ -328,7 +325,7 @@ def quest_switch_off(quest_name):
             quests_enabled = False
 
     else:
-        send_msg('@', bot_user_id, quest_name + ' уже есть в списке')
+        send_msg('@', bot_user_id, quest_name + ' отсутствует в списке')
 
     send_msg('@', bot_user_id, 'Состояние списка: ' + str(quests))
 
