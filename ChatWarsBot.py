@@ -249,7 +249,11 @@ def parse_text(text, username, message_id):
                 'quest_on/off',
                 'corovan_on/off',
                 'bot_on/off',
-                'stock_on/off'
+                'stock_on/off',
+                'forest_on/off',
+                'swamp_on/off',
+                'valley_off',
+                'status'
             ]))
         elif text == 'quest_off':
             quests_enabled = False
@@ -275,7 +279,7 @@ def parse_text(text, username, message_id):
         elif text == 'stock_off':
             stock = False
             send_msg('@', bot_user_id, 'Биржа выключена')
-        elif text == 'les_on':
+        elif text == 'forest_on':
             forest_enabled = True
             quest_switch_on('forest')
         elif text == 'swamp_on':
@@ -293,6 +297,14 @@ def parse_text(text, username, message_id):
         elif text == 'swamp_off':
             swamp_enabled = False
             quest_switch_off('swamp')
+        elif text == 'status':
+            send_msg('@', bot_user_id, '\n'.join([
+                str(quests),
+                'stock = ' + str(stock),
+                'quest = ' + str(quests_enabled),
+                'corovan = ' + str(corovan_enabled),
+                'bot = ' + str(bot_enabled)
+            ]))
         else:
             del_msg(message_id)
 
